@@ -29,30 +29,38 @@ $(document).ready(function() {
         }, typingSpeed);
     }
     
-    // 烟雾消散效果
-    function smokeEffect(element, callback) {
-        const text = element.text();
-        const position = element.position();
-        const elementWidth = element.width();
-        const elementHeight = element.height();
-        
-        // 为每个字符创建粒子
-        for (let i = 0; i < text.length; i++) {
-            const charWidth = elementWidth / text.length;
-            const baseX = position.left + i * charWidth;
-            const baseY = position.top;
-            
-            // 为每个字符创建多个粒子
-            for (let j = 0; j < 20; j++) {
-                createParticle(baseX, baseY, elementHeight);
-            }
+    // 优化的烟雾消散效果
+function smokeEffect(element, callback) {
+    const text = element.text();
+    const position = element.position();
+    const elementWidth = element.width();
+    const elementHeight = element.height();
+
+    // 创建占位元素保持布局稳定
+    const placeholder = element.clone().css({
+        'visibility': 'hidden',
+        'position': 'static',
+        'opacity': '0'
+    }).insertAfter(element);
+
+    // 为每个字符创建粒子
+    for (let i = 0; i < text.length; i++) {
+        const charWidth = elementWidth / text.length;
+        const baseX = position.left + i * charWidth;*
+        const baseY = position.top;
+
+        // 为每个字符创建多个粒子
+        for (let j = 0; j < 20; j++) {
+            createParticle(baseX, baseY, elementHeight);
         }
-        
-        // 文字消失
-        element.fadeOut(800, function() {
-            if (callback) setTimeout(callback, 500);
-        });
     }
+
+    // 文字消失
+    element.fadeOut(800, function() {
+        placeholder.remove(); // 动画结束后移除占位元素
+        if (callback) setTimeout(callback, 500);
+    });
+}
     
     // 创建单个粒子
     function createParticle(x, y, height) {
@@ -263,12 +271,41 @@ $(document).ready(function() {
         });
     }
     
-    // 显示彩蛋页面
-    function showEasterEggScene() {
-        $('#cetQueryScene').fadeOut(500, function() {
-            $('#easterEggScene').removeClass('hide').hide().fadeIn(500);
+    // 显示彩蛋页面的函数
+function showEasterEggScene() {
+    // 重置所有文字状态
+    $('.floaty-text').css('opacity', 0);
+
+    $('#cetQueryScene').fadeOut(500, function() {
+        $('#easterEggScene').removeClass('hide').hide().fadeIn(500, function() {
+            // 手动控制文字显示，以防动画失效
+            setTimeout(function() {
+                $('#floatyText1').css('opacity', 1);
+
+                setTimeout(function() {
+                    $('#floatyText1').css('opacity', 0);
+                    $('#floatyText2').css('opacity', 1);
+
+                    setTimeout(function() {
+                        $('#floatyText2').css('opacity', 0);
+                        $('#floatyText3').css('opacity', 1);
+
+                        setTimeout(function() {
+                            $('#floatyText3').css('opacity', 0);
+                            $('#floatyText4').css('opacity', 1);
+
+                            setTimeout(function() {
+                                $('#floatyText4').css('opacity', 0);
+                                $('#restartBtn').css('opacity', 1);
+                            }, 5000);
+                        }, 5000);
+                    }, 5000);
+                }, 5000);
+            }, 1000);
         });
-    }
+    });
+}
+
     
     // 重置到初始状态
     function resetToInitial() {
